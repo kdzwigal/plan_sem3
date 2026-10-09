@@ -5,7 +5,7 @@ const { isAnnouncementsSnapshot } = require('./announcements');
 const ROOT = __dirname;
 const PUBLISH_DIRECTORY = path.join(ROOT, 'dist');
 const ANNOUNCEMENTS_CACHE = path.join(ROOT, 'data', 'announcements.json');
-const STATIC_FILES = ['index.html', 'app.js', 'styles.css'];
+const STATIC_FILES = ['index.html', 'app.js', 'styles.css', 'warsaw-roads.svg'];
 
 async function buildStaticSite({ outputDirectory = PUBLISH_DIRECTORY } = {}) {
   const cachedAnnouncements = JSON.parse(await fs.readFile(ANNOUNCEMENTS_CACHE, 'utf8'));

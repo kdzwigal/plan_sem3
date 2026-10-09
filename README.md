@@ -2,6 +2,8 @@
 
 Interaktywna strona planu na podstawie pliku `plan_sem3.xls` i zrzutu ekranu z terminami zjazdów. Domyślnie pokazuje plan grupy Z301; można przełączyć się na Z302–Z305. Zawiera wybór jednego z ośmiu zjazdów, informację o grupach przy wspólnych przedmiotach, wyszukiwanie zajęć, aktualne komunikaty uczelni oraz trzy motywy: jasny, monochromatyczny E-ink i ciemny. Wybrany motyw jest zapamiętywany w przeglądarce; grupa i zjazd są przechowywane w ciasteczkach przez rok.
 
+Tło strony zawiera wektorowy schemat głównych dróg Warszawy oparty na danych OpenStreetMap. Mapa delikatnie przesuwa się przy przewijaniu; ruch jest wyłączony przy ustawieniu systemowym ograniczającym animacje. Dane mapy są statycznym zasobem witryny, a przypisanie autorstwa znajduje się w stopce.
+
 ## Budowanie i lokalne uruchamianie
 
 Build tworzy pliki witryny w katalogu `dist/`:

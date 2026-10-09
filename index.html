@@ -23,6 +23,9 @@
     <script src="./app.js" defer></script>
   </head>
   <body>
+    <div class="map-backdrop" aria-hidden="true">
+      <img src="./warsaw-roads.svg" alt="" fetchpriority="low" />
+    </div>
     <header class="topbar">
       <a class="brand" href="#" aria-label="Plan zajęć — strona główna">
         <span class="brand-mark" aria-hidden="true">P</span>
@@ -154,6 +157,7 @@
 
     <footer class="footer">
       <span>Plan semestru zimowego 2026/2027</span>
+      <span class="map-attribution">Mapa: © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap contributors</a></span>
       <a href="#page-title">Do góry ↑</a>
     </footer>
     <div class="error-banner" id="error-banner" role="alert" hidden>

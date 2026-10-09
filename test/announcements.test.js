@@ -122,7 +122,14 @@ test('builds static assets and includes a validated RSS fallback without fetchin
       await fs.readFile(path.join(__dirname, '..', 'data', 'schedule.json'), 'utf8'),
     );
     assert.match(await fs.readFile(path.join(outputDirectory, 'app.js'), 'utf8'), /\/api\/announcements/);
-    assert.deepEqual((await fs.readdir(outputDirectory)).sort(), ['app.js', 'data', 'index.html', 'styles.css']);
+    assert.equal(
+      await fs.readFile(path.join(outputDirectory, 'warsaw-roads.svg'), 'utf8'),
+      await fs.readFile(path.join(__dirname, '..', 'warsaw-roads.svg'), 'utf8'),
+    );
+    assert.deepEqual(
+      (await fs.readdir(outputDirectory)).sort(),
+      ['app.js', 'data', 'index.html', 'styles.css', 'warsaw-roads.svg'],
+    );
     assert.deepEqual(
       (await fs.readdir(path.join(outputDirectory, 'data'))).sort(),
       ['announcements.json', 'schedule.json'],
@@ -155,6 +162,10 @@ test('fetches fresh RSS on each announcements request and disables response cach
         assert.equal(response.headers.get('cache-control'), 'no-store');
         assert.equal(result.fetchedAt, `2026-10-09T10:57:${String(request).padStart(2, '0')}.000Z`);
       }
+      const mapResponse = await fetch(`${baseUrl}/warsaw-roads.svg`);
+      assert.equal(mapResponse.status, 200);
+      assert.equal(mapResponse.headers.get('content-type'), 'image/svg+xml');
+      assert.match(await mapResponse.text(), /<svg\b/);
       assert.equal(fetchCount, 2);
     } finally {
       await new Promise((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));

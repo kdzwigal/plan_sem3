@@ -136,6 +136,24 @@ function setupThemePicker() {
   });
 }
 
+function setupMapParallax() {
+  const map = document.querySelector('.map-backdrop');
+  if (!map || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  let animationFrame = 0;
+  const updateMapPosition = () => {
+    animationFrame = 0;
+    const offset = Math.max(-window.innerHeight * 0.14, -window.scrollY * 0.08);
+    map.style.setProperty('--map-scroll-offset', `${offset}px`);
+  };
+
+  window.addEventListener('scroll', () => {
+    if (animationFrame) return;
+    animationFrame = window.requestAnimationFrame(updateMapPosition);
+  }, { passive: true });
+  updateMapPosition();
+}
+
 function renderAnnouncement(item) {
   const card = document.createElement('article');
   const isRelevant = item.groups.includes(state.selectedGroup) || item.groups.length === 0;
@@ -501,6 +519,7 @@ function render() {
 
 async function start() {
   setupThemePicker();
+  setupMapParallax();
   try {
     const response = await fetch('./data/schedule.json');
     if (!response.ok) throw new Error(`Nie udało się pobrać danych planu (${response.status}).`);
