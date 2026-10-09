@@ -84,7 +84,7 @@
       <section class="schedule-section" id="schedule" aria-labelledby="schedule-heading">
         <div class="schedule-heading">
           <div>
-            <p class="section-kicker">GRUPA Z301</p>
+            <p class="section-kicker" id="selected-group-kicker">GRUPA Z301</p>
             <h2 id="schedule-heading">Plan zjazdu</h2>
           </div>
           <label class="search-box">
@@ -93,6 +93,11 @@
             <input id="search-input" type="search" placeholder="Szukaj zajęć…" autocomplete="off" />
             <kbd>/</kbd>
           </label>
+        </div>
+
+        <div class="group-picker">
+          <p class="group-picker-label" id="group-picker-label">Pokaż plan grupy</p>
+          <div class="group-options" id="group-options" role="radiogroup" aria-labelledby="group-picker-label"></div>
         </div>
 
         <div class="schedule-summary">

@@ -28,12 +28,15 @@ const dateRangeFormatter = new Intl.DateTimeFormat('pl-PL', {
 
 const state = {
   schedule: null,
+  selectedGroup: primaryGroup,
   selectedSession: 1,
   search: '',
+  announcements: [],
 };
 
 const elements = {
   sessionList: document.querySelector('#session-list'),
+  groupOptions: document.querySelector('#group-options'),
   dayGrid: document.querySelector('#day-grid'),
   searchInput: document.querySelector('#search-input'),
   announcementList: document.querySelector('#announcement-list'),
@@ -68,7 +71,7 @@ function setText(selector, value) {
 
 function renderAnnouncement(item) {
   const card = document.createElement('article');
-  const isRelevant = item.groups.includes(primaryGroup) || item.groups.length === 0;
+  const isRelevant = item.groups.includes(state.selectedGroup) || item.groups.length === 0;
   card.className = `announcement-card${isRelevant ? ' is-relevant' : ' is-other-group'}`;
 
   const header = document.createElement('div');
@@ -135,6 +138,7 @@ async function loadAnnouncements() {
     }
 
     const cards = result.items.map(renderAnnouncement);
+    state.announcements = result.items;
     elements.announcementList.replaceChildren(...cards);
     const updateTime = new Intl.DateTimeFormat('pl-PL', {
       day: 'numeric',
@@ -233,9 +237,34 @@ function getCourseEvents(entry, sessionNumber) {
       }
     }
   }
-  return [...events.values()].filter((event) =>
-    event.groups.some((group) => group.name === primaryGroup),
-  );
+  return [...events.values()]
+    .filter((event) => event.groups.some((group) => group.name === state.selectedGroup))
+    .map((event) => ({
+      ...event,
+      room: event.groups.find((group) => group.name === state.selectedGroup).room,
+    }));
+}
+
+function renderGroupOptions() {
+  elements.groupOptions.replaceChildren();
+  for (const group of state.schedule.groups) {
+    const label = document.createElement('label');
+    label.className = `group-option${group === state.selectedGroup ? ' is-selected' : ''}`;
+    const input = document.createElement('input');
+    input.type = 'radio';
+    input.name = 'schedule-group';
+    input.value = group;
+    input.checked = group === state.selectedGroup;
+    input.setAttribute('aria-label', `Pokaż plan grupy Z${group}`);
+    input.addEventListener('change', () => {
+      state.selectedGroup = group;
+      render();
+    });
+    const text = document.createElement('span');
+    text.textContent = `Z${group}`;
+    label.append(input, text);
+    elements.groupOptions.append(label);
+  }
 }
 
 function renderSessions() {
@@ -294,12 +323,11 @@ function renderCourseCard(course) {
 
   const tags = document.createElement('div');
   tags.className = 'class-tags';
-  const rooms = [...new Set(course.groups.map((group) => group.room).filter(Boolean))];
-  if (rooms.length) {
+  if (course.room) {
     const room = document.createElement('span');
     room.className = 'room-tag';
     room.innerHTML = '<span aria-hidden="true">⌖</span> ';
-    room.append(document.createTextNode(rooms.join(' / ')));
+    room.append(document.createTextNode(course.room));
     tags.append(room);
   }
   card.append(tags);
@@ -380,7 +408,10 @@ function renderSchedule() {
   setText('#overview-session', `Zjazd ${session.number} / 8`);
   setText('#class-count', String(totalCourses));
   setText('#schedule-date-range', `Plan na ${formatRange(session.dates[0], session.dates[2])}`);
-  setText('#schedule-heading', `Plan Z301 · zjazd ${session.number}`);
+  setText('#schedule-heading', `Plan Z${state.selectedGroup} · zjazd ${session.number}`);
+  setText('#selected-group-kicker', `GRUPA Z${state.selectedGroup}`);
+  setText('#primary-group', `Z${state.selectedGroup}`);
+  renderGroupOptions();
   renderSessions();
 }
 
@@ -393,6 +424,9 @@ function renderHero() {
 function render() {
   renderHero();
   renderSchedule();
+  if (state.announcements.length) {
+    elements.announcementList.replaceChildren(...state.announcements.map(renderAnnouncement));
+  }
 }
 
 async function start() {

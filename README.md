@@ -1,6 +1,6 @@
 # Plan zajęć — semestr zimowy 2026/2027
 
-Interaktywna strona planu na podstawie pliku `plan_sem3.xls` i zrzutu ekranu z terminami zjazdów. Domyślnie pokazuje plan grupy Z301, wybór jednego z ośmiu zjazdów, informację o grupach przy wspólnych przedmiotach, wyszukiwanie zajęć i aktualne komunikaty uczelni.
+Interaktywna strona planu na podstawie pliku `plan_sem3.xls` i zrzutu ekranu z terminami zjazdów. Domyślnie pokazuje plan grupy Z301; można przełączyć się na Z302–Z305. Zawiera wybór jednego z ośmiu zjazdów, informację o grupach przy wspólnych przedmiotach, wyszukiwanie zajęć i aktualne komunikaty uczelni.
 
 ## Budowanie i lokalne podglądanie
 
