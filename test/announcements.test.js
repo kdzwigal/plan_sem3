@@ -97,17 +97,44 @@ test('builds a static publish directory with an RSS snapshot and only public fil
   });
 });
 
-test('fails the static build if the RSS feed cannot be loaded', async () => {
+test('uses the validated saved snapshot if the upstream RSS fetch fails', async () => {
   await withTempDirectory(async (outputDirectory) => {
+    const cacheFile = path.join(outputDirectory, 'announcements-cache.json');
+    const snapshot = {
+      items: parseRss(feed),
+      fetchedAt: '2026-10-09T10:57:55.000Z',
+    };
+    await fs.writeFile(cacheFile, JSON.stringify(snapshot));
+    await buildStaticSite({
+      outputDirectory: path.join(outputDirectory, 'dist'),
+      cacheFile,
+      loadAnnouncements: async () => {
+        throw new Error('UNABLE_TO_VERIFY_LEAF_SIGNATURE');
+      },
+    });
+
+    const publishedSnapshot = JSON.parse(
+      await fs.readFile(path.join(outputDirectory, 'dist', 'data', 'announcements.json'), 'utf8'),
+    );
+    assert.deepEqual(publishedSnapshot, snapshot);
+  });
+});
+
+test('fails the static build if neither RSS nor a valid saved snapshot is available', async () => {
+  await withTempDirectory(async (outputDirectory) => {
+    const cacheFile = path.join(outputDirectory, 'missing-snapshot.json');
+    const publishDirectory = path.join(outputDirectory, 'dist');
     await assert.rejects(
       buildStaticSite({
-        outputDirectory,
+        outputDirectory: publishDirectory,
+        cacheFile,
         loadAnnouncements: async () => {
           throw new Error('Kanał RSS jest niedostępny.');
         },
       }),
-      /Kanał RSS jest niedostępny/,
+      /RSS ani wczytać prawidłowej migawki/,
     );
     assert.deepEqual(await fs.readdir(outputDirectory), []);
+    await assert.rejects(fs.access(publishDirectory), { code: 'ENOENT' });
   });
 });
