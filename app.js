@@ -16,6 +16,12 @@ const days = [
 ];
 
 const primaryGroup = '301';
+const themes = ['light', 'eink', 'dark'];
+const themeColors = {
+  light: '#f5f6fa',
+  eink: '#ededed',
+  dark: '#131419',
+};
 
 const dateFormatter = new Intl.DateTimeFormat('pl-PL', {
   day: 'numeric',
@@ -67,6 +73,32 @@ function initialSession() {
 
 function setText(selector, value) {
   document.querySelector(selector).textContent = value;
+}
+
+function applyTheme(theme, persist = true) {
+  if (!themes.includes(theme)) return;
+
+  document.documentElement.dataset.theme = theme;
+  document.querySelector('meta[name="theme-color"]').content = themeColors[theme];
+  document.querySelectorAll('[data-theme-choice]').forEach((button) => {
+    button.setAttribute('aria-pressed', String(button.dataset.themeChoice === theme));
+  });
+
+  if (persist) {
+    try {
+      localStorage.setItem('plan-zajec-theme', theme);
+    } catch (error) {
+      console.warn('Nie udało się zapamiętać wybranego motywu:', error);
+    }
+  }
+}
+
+function setupThemePicker() {
+  const savedTheme = document.documentElement.dataset.theme;
+  applyTheme(themes.includes(savedTheme) ? savedTheme : 'light', false);
+  document.querySelectorAll('[data-theme-choice]').forEach((button) => {
+    button.addEventListener('click', () => applyTheme(button.dataset.themeChoice));
+  });
 }
 
 function renderAnnouncement(item) {
@@ -430,6 +462,7 @@ function render() {
 }
 
 async function start() {
+  setupThemePicker();
   try {
     const response = await fetch('./data/schedule.json');
     if (!response.ok) throw new Error(`Nie udało się pobrać danych planu (${response.status}).`);
