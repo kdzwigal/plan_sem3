@@ -71,6 +71,41 @@ function initialSession() {
   return sessions.find((session) => localDate(session.dates[2]) >= today)?.number ?? sessions.at(-1).number;
 }
 
+function readCookie(name) {
+  try {
+    const prefix = `${encodeURIComponent(name)}=`;
+    const cookie = document.cookie.split(';').map((item) => item.trim()).find((item) => item.startsWith(prefix));
+    return cookie ? decodeURIComponent(cookie.slice(prefix.length)) : null;
+  } catch (error) {
+    console.warn('Nie udało się odczytać ustawień zapisanych w ciasteczkach:', error);
+    return null;
+  }
+}
+
+function saveCookie(name, value) {
+  try {
+    const secure = location.protocol === 'https:' ? '; Secure' : '';
+    document.cookie =
+      `${encodeURIComponent(name)}=${encodeURIComponent(value)}; Max-Age=31536000; Path=/; SameSite=Lax${secure}`;
+  } catch (error) {
+    console.warn('Nie udało się zapisać ustawień w ciasteczkach:', error);
+  }
+}
+
+function restoreSchedulePreferences(schedule) {
+  const savedGroup = readCookie('plan-zajec-group');
+  if (schedule.groups.includes(savedGroup)) {
+    state.selectedGroup = savedGroup;
+  }
+
+  const savedSession = Number(readCookie('plan-zajec-session'));
+  if (sessions.some((session) => session.number === savedSession)) {
+    state.selectedSession = savedSession;
+  } else {
+    state.selectedSession = initialSession();
+  }
+}
+
 function setText(selector, value) {
   document.querySelector(selector).textContent = value;
 }
@@ -291,6 +326,7 @@ function renderGroupOptions() {
     input.setAttribute('aria-label', `Pokaż plan grupy Z${group}`);
     input.addEventListener('change', () => {
       state.selectedGroup = group;
+      saveCookie('plan-zajec-group', group);
       render();
     });
     const text = document.createElement('span');
@@ -316,6 +352,7 @@ function renderSessions() {
     `;
     button.addEventListener('click', () => {
       state.selectedSession = session.number;
+      saveCookie('plan-zajec-session', session.number);
       render();
     });
     elements.sessionList.append(button);
@@ -472,7 +509,7 @@ async function start() {
       throw new Error('Plik planu ma nieprawidłową strukturę.');
     }
     state.schedule = schedule;
-    state.selectedSession = initialSession();
+    restoreSchedulePreferences(schedule);
     elements.searchInput.addEventListener('input', () => {
       state.search = elements.searchInput.value.trim().toLocaleLowerCase('pl-PL');
       renderSchedule();

@@ -1,6 +1,52 @@
+const fs = require('node:fs');
+const https = require('node:https');
+const path = require('node:path');
+const tls = require('node:tls');
+
 const FEED_URL = 'https://student.wwsi.edu.pl/feed/';
 const MAX_FEED_BYTES = 1_000_000;
 const MAX_ANNOUNCEMENTS = 50;
+const RSS_ISSUER_CERTIFICATE = fs.readFileSync(
+  path.join(__dirname, 'certs', 'harica-geant-tls-rsa-1.pem'),
+  'utf8',
+);
+
+function fetchRss(url, options, getImpl = https.get) {
+  const feedUrl = new URL(url);
+  if (feedUrl.protocol !== 'https:' || feedUrl.hostname !== 'student.wwsi.edu.pl') {
+    throw new Error('Adres kanału RSS jest niedozwolony.');
+  }
+
+  return new Promise((resolve, reject) => {
+    const request = getImpl(feedUrl, {
+      headers: { ...options.headers, 'Accept-Encoding': 'identity' },
+      ca: [...tls.rootCertificates, RSS_ISSUER_CERTIFICATE],
+      signal: options.signal,
+    }, (response) => {
+      const chunks = [];
+      let totalBytes = 0;
+      response.on('data', (chunk) => {
+        totalBytes += chunk.length;
+        if (totalBytes > MAX_FEED_BYTES) {
+          response.destroy(new Error('Kanał RSS przekracza dozwolony rozmiar.'));
+          return;
+        }
+        chunks.push(chunk);
+      });
+      response.on('end', () => {
+        const status = response.statusCode;
+        if (!status) {
+          reject(new Error('Kanał RSS zwrócił nieprawidłową odpowiedź HTTP.'));
+          return;
+        }
+        const body = [204, 205, 304].includes(status) ? null : Buffer.concat(chunks);
+        resolve(new Response(body, { status, headers: response.headers }));
+      });
+      response.on('error', reject);
+    });
+    request.on('error', reject);
+  });
+}
 
 function decodeEntities(value) {
   return value.replace(/&(#x[0-9a-f]+|#\d+|amp|lt|gt|quot|apos|nbsp|#039);/gi, (entity, code) => {
@@ -162,7 +208,7 @@ async function readFeedBody(response) {
   return Buffer.concat(chunks).toString('utf8');
 }
 
-async function fetchAnnouncements({ fetchImpl = fetch, now = Date.now } = {}) {
+async function fetchAnnouncements({ fetchImpl = fetchRss, now = Date.now } = {}) {
   const response = await fetchImpl(FEED_URL, {
     headers: { Accept: 'application/rss+xml, application/xml;q=0.9, text/xml;q=0.8' },
     redirect: 'error',
@@ -182,6 +228,7 @@ async function fetchAnnouncements({ fetchImpl = fetch, now = Date.now } = {}) {
 
 module.exports = {
   FEED_URL,
+  fetchRss,
   fetchAnnouncements,
   isAnnouncementsSnapshot,
   parseRss,

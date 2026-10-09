@@ -1,9 +1,12 @@
 const assert = require('node:assert/strict');
+const { X509Certificate } = require('node:crypto');
+const { EventEmitter } = require('node:events');
+const { Readable } = require('node:stream');
 const test = require('node:test');
 const fs = require('node:fs/promises');
 const os = require('node:os');
 const path = require('node:path');
-const { FEED_URL, fetchAnnouncements, parseRss, referencedGroups } = require('../announcements');
+const { FEED_URL, fetchAnnouncements, fetchRss, parseRss, referencedGroups } = require('../announcements');
 const { buildStaticSite } = require('../build');
 const { createServer } = require('../server');
 
@@ -66,6 +69,40 @@ test('fetches the RSS feed with a verified, bounded request', async () => {
   assert.equal(request[1].headers.Accept.includes('application/rss+xml'), true);
   assert.equal(result.items.length, 2);
   assert.equal(result.fetchedAt, '2026-10-09T10:57:55.000Z');
+});
+
+test('adds only the verified RSS issuer certificate while retaining Node trusted roots', async () => {
+  const request = new EventEmitter();
+  let requestUrl;
+  let requestOptions;
+  const response = Readable.from([Buffer.from(feed)]);
+  response.statusCode = 200;
+  response.headers = { 'content-type': 'application/rss+xml' };
+
+  const result = await fetchRss(
+    FEED_URL,
+    { headers: { Accept: 'application/rss+xml' }, signal: AbortSignal.timeout(1_000) },
+    (url, options, onResponse) => {
+      requestUrl = url;
+      requestOptions = options;
+      onResponse(response);
+      return request;
+    },
+  );
+
+  assert.equal(requestUrl.href, FEED_URL);
+  assert.equal(requestOptions.headers['Accept-Encoding'], 'identity');
+  assert.deepEqual(requestOptions.ca.slice(0, -1), require('node:tls').rootCertificates);
+  const issuer = new X509Certificate(requestOptions.ca.at(-1));
+  assert.equal(issuer.fingerprint256, '5B:67:8D:C4:40:95:A5:28:95:B6:3B:31:F2:72:27:F4:B3:6C:3E:34:74:91:BF:2B:FA:69:18:37:A5:FB:8C:79');
+  assert.match(await result.text(), /<rss/);
+});
+
+test('refuses to use the RSS-specific trust certificate for other origins', () => {
+  assert.throws(
+    () => fetchRss('https://example.com/feed/', { headers: {}, signal: AbortSignal.timeout(1_000) }),
+    /Adres kanału RSS jest niedozwolony/,
+  );
 });
 
 async function withTempDirectory(callback) {
