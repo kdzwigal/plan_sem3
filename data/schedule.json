@@ -1,0 +1,298 @@
+{
+  "groups": [
+    "301",
+    "302",
+    "303",
+    "304",
+    "305"
+  ],
+  "entries": [
+    {
+      "day": "Piątek",
+      "period": 1,
+      "time": "16.15 - 17.00",
+      "groups": {
+        "301": {
+          "room": "107/107",
+          "description": "Technika cyfrowa wykł. - dr hab. inż. Z. Gniazdowski, prof. WWSI (zjazdy 1,3,5,7)/Algorytmy i struktury danych wykł. - dr hab. inż. Z. Gniazdowski, prof. WWSI (zjazdy 2,4,6)"
+        },
+        "302": {
+          "room": "107/107",
+          "description": "Technika cyfrowa wykł. - dr hab. inż. Z. Gniazdowski, prof. WWSI (zjazdy 1,3,5,7)/Algorytmy i struktury danych wykł. - dr hab. inż. Z. Gniazdowski, prof. WWSI (zjazdy 2,4,6)"
+        },
+        "303": {
+          "room": "107/107",
+          "description": "Technika cyfrowa wykł. - dr hab. inż. Z. Gniazdowski, prof. WWSI (zjazdy 1,3,5,7)/Algorytmy i struktury danych wykł. - dr hab. inż. Z. Gniazdowski, prof. WWSI (zjazdy 2,4,6)"
+        },
+        "304": {
+          "room": "107/107",
+          "description": "Technika cyfrowa wykł. - dr hab. inż. Z. Gniazdowski, prof. WWSI (zjazdy 1,3,5,7)/Algorytmy i struktury danych wykł. - dr hab. inż. Z. Gniazdowski, prof. WWSI (zjazdy 2,4,6)"
+        },
+        "305": {
+          "room": "107/107",
+          "description": "Technika cyfrowa wykł. - dr hab. inż. Z. Gniazdowski, prof. WWSI (zjazdy 1,3,5,7)/Algorytmy i struktury danych wykł. - dr hab. inż. Z. Gniazdowski, prof. WWSI (zjazdy 2,4,6)"
+        }
+      }
+    },
+    {
+      "day": "Piątek",
+      "period": 3,
+      "time": "18.05 - 18.50",
+      "groups": {
+        "301": {
+          "room": "107",
+          "description": "Podstawy elektrotechniki, elektroniki i miernictwa wykł. - dr inż. K. Madziar (zjazdy 1,3,5,7)"
+        },
+        "302": {
+          "room": "107",
+          "description": "Podstawy elektrotechniki, elektroniki i miernictwa wykł. - dr inż. K. Madziar (zjazdy 1,3,5,7)"
+        },
+        "303": {
+          "room": "107/115",
+          "description": "Podstawy elektrotechniki, elektroniki i miernictwa wykł. - dr inż. K. Madziar (zjazdy 1,3,5,7)/J. angielski - dr I.Iwanowa-Micewicz (zjazdy 2,4)"
+        },
+        "304": {
+          "room": "107",
+          "description": "Podstawy elektrotechniki, elektroniki i miernictwa wykł. - dr inż. K. Madziar (zjazdy 1,3,5,7)"
+        },
+        "305": {
+          "room": "107/109",
+          "description": "Podstawy elektrotechniki, elektroniki i miernictwa wykł. - dr inż. K. Madziar (zjazdy 1,3,5,7)/Algorytmy i struktury danych lab. - dr inż. E. Figielska (zjazdy 2,4,6)"
+        }
+      }
+    },
+    {
+      "day": "Piątek",
+      "period": 5,
+      "time": "19.55 - 20.40",
+      "groups": {
+        "301": {
+          "room": "107",
+          "description": "Technologie sieciowe wykł. - dr inż. D. Chaładyniak (zjazdy 1,5)"
+        },
+        "302": {
+          "room": "107",
+          "description": "Technologie sieciowe wykł. - dr inż. D. Chaładyniak (zjazdy 1,5)"
+        },
+        "303": {
+          "room": "107",
+          "description": "Technologie sieciowe wykł. - dr inż. D. Chaładyniak (zjazdy 1,5)"
+        },
+        "304": {
+          "room": "107",
+          "description": "Technologie sieciowe wykł. - dr inż. D. Chaładyniak (zjazdy 1,5)/"
+        },
+        "305": {
+          "room": "107/115",
+          "description": "Technologie sieciowe wykł. - dr inż. D. Chaładyniak (zjazdy 1,5)/J. angielski - dr I.Iwanowa-Micewicz (zjazdy 2,4)"
+        }
+      }
+    },
+    {
+      "day": "Sobota",
+      "period": 1,
+      "time": "8.00 - 8.45",
+      "groups": {
+        "301": {
+          "room": "207",
+          "description": "Języki i paradygmaty programowania wykł. - mgr inż. A. Ptasznik (zjazdy 1,5)"
+        },
+        "302": {
+          "room": "207",
+          "description": "Języki i paradygmaty programowania wykł. - mgr inż. A. Ptasznik (zjazdy 1,5)"
+        },
+        "303": {
+          "room": "207/115",
+          "description": "Języki i paradygmaty programowania wykł. - mgr inż. A. Ptasznik (zjazdy 1,5)/J. angielski - dr I.Iwanowa-Micewicz (zjazdy 2,3,4,6,7)"
+        },
+        "304": {
+          "room": "207/108",
+          "description": "Języki i paradygmaty programowania wykł. - mgr inż. A. Ptasznik (zjazdy 1,5)/Algorytmy i struktury danych lab. - (zjazdy 2,3,4,6,7) - dr L. Rudak"
+        },
+        "305": {
+          "room": "207",
+          "description": "Języki i paradygmaty programowania wykł. - mgr inż. A. Ptasznik (zjazdy 1,5)"
+        }
+      }
+    },
+    {
+      "day": "Sobota",
+      "period": 3,
+      "time": "9.45 - 10.30",
+      "groups": {
+        "301": {
+          "room": "115",
+          "description": "J. angielski - mgr I.Iwanowa-Micewicz (zjazdy 1-7)"
+        },
+        "302": {
+          "room": "108",
+          "description": "Algorytmy i struktury danych lab. - (zjazdy 1-7) - dr L. Rudak"
+        },
+        "303": {
+          "room": "211",
+          "description": "Języki i paradygmaty programowania lab. - mgr inż.A. Kuska (zjazdy 1 -7)"
+        },
+        "304": {
+          "room": "213",
+          "description": "Technologie sieciowe lab. - mgr inż.  J. Wacnik (zjazdy 1-7)"
+        },
+        "305": {
+          "room": "109",
+          "description": "Algorytmy i struktury danych lab. - dr inż. E. Figielska (zjazdy 3,4,5,7)"
+        }
+      }
+    },
+    {
+      "day": "Sobota",
+      "period": 5,
+      "time": "11.30 - 12.15",
+      "groups": {
+        "301": {
+          "room": "108",
+          "description": "Algorytmy i struktury danych lab (zjazdy 1-7) dr L. Rudak"
+        },
+        "302": {
+          "room": "115",
+          "description": "J. angielski - mgr I.Iwanowa-Micewicz (zjazdy 1-7)"
+        },
+        "303": {
+          "room": "213",
+          "description": "Technologie sieciowe lab. - mgr inż.  J. Wacnik (zjazdy 1-7)"
+        },
+        "304": {
+          "room": "211",
+          "description": "Języki i paradygmaty programowania lab. - mgr inż.A. Kuska (zjazdy 1 -7)"
+        },
+        "305": {
+          "room": "09",
+          "description": "Języki i paradygmaty programowania lab. -  mgr inż.  M. Sitek (zjazdy 1-7)"
+        }
+      }
+    },
+    {
+      "day": "Sobota",
+      "period": 7,
+      "time": "13.45 - 14.30",
+      "groups": {
+        "301": {
+          "room": "211",
+          "description": "Języki i paradygmaty programowania lab. - mgr inż.A. Kuska (zjazdy 1 -7)"
+        },
+        "302": {
+          "room": "09",
+          "description": "Języki i paradygmaty programowania lab. -  mgr inż.  M. Sitek (zjazdy 1-7)"
+        },
+        "303": {
+          "room": "108",
+          "description": "Algorytmy i struktury danych lab. - (zjazdy 1-7) - dr L. Rudak"
+        },
+        "304": {
+          "room": "115",
+          "description": "J. angielski - dr I.Iwanowa-Micewicz (zjazdy 1-7)"
+        },
+        "305": {
+          "room": "213",
+          "description": "Technologie sieciowe lab. - mgr inż.  J. Wacnik (zjazdy 1-7)"
+        }
+      }
+    },
+    {
+      "day": "Sobota",
+      "period": 9,
+      "time": "15.25 - 16.10",
+      "groups": {
+        "304": {
+          "room": "108",
+          "description": "Algorytmy i struktury danych lab. - (zjazdy 1,4) - dr L. Rudak"
+        },
+        "305": {
+          "room": "115",
+          "description": "J. angielski - dr I.Iwanowa-Micewicz (zjazdy 1,3,5,6,7)"
+        }
+      }
+    },
+    {
+      "day": "Niedziela",
+      "period": 1,
+      "time": "8.00 - 8.45",
+      "groups": {
+        "304": {
+          "room": "108",
+          "description": "Podstawy elktrotechniki, elektroniki i miernictwa lab. - dr inż. P. Kopciał (zjazdy 1-7)"
+        },
+        "305": {
+          "room": "112",
+          "description": "WF - mgr S. Duda (zjazdy 2-7)"
+        }
+      }
+    },
+    {
+      "day": "Niedziela",
+      "period": 3,
+      "time": "9.45 - 10.30",
+      "groups": {
+        "301": {
+          "room": "213",
+          "description": "Technologie sieciowe lab. - mgr inż. A. Chaładyniak  (zjazdy 1 - 7)"
+        },
+        "304": {
+          "room": "112",
+          "description": "WF - mgr S. Duda (zjazdy 2-7)"
+        },
+        "305": {
+          "room": "108",
+          "description": "Podstawy elktrotechniki, elektroniki i miernictwa lab. - dr inż. P. Kopciał (zjazdy 1-7)"
+        }
+      }
+    },
+    {
+      "day": "Niedziela",
+      "period": 5,
+      "time": "11.30 - 12.15",
+      "groups": {
+        "301": {
+          "room": "108",
+          "description": "Podstawy elktrotechniki, elektroniki i miernictwa lab. - dr inż. P. Kopciał (zjazdy 1-7)"
+        },
+        "302": {
+          "room": "213",
+          "description": "Technologie sieciowe lab. - mgr inż. A. Chaładyniak  (zjazdy 1 - 7)"
+        },
+        "303": {
+          "room": "112",
+          "description": "WF - mgr S. Duda (zjazdy 2-7)"
+        }
+      }
+    },
+    {
+      "day": "Niedziela",
+      "period": 7,
+      "time": "13.45 - 14.30",
+      "groups": {
+        "301": {
+          "room": "112",
+          "description": "WF - mgr S. Duda (zjazdy 2-7)"
+        },
+        "302": {
+          "room": "108",
+          "description": "Podstawy elktrotechniki, elektroniki i miernictwa lab. - dr inż. P. Kopciał (zjazdy 1-7)"
+        }
+      }
+    },
+    {
+      "day": "Niedziela",
+      "period": 9,
+      "time": "15.25 - 16.10",
+      "groups": {
+        "302": {
+          "room": "112",
+          "description": "WF - mgr S. Duda (zjazdy 2-7)"
+        },
+        "303": {
+          "room": "108",
+          "description": "Podstawy elktrotechniki, elektroniki i miernictwa lab. - dr inż. P. Kopciał (zjazdy 1-7)"
+        }
+      }
+    }
+  ]
+}

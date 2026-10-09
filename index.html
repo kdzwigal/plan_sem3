@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Plan zajęć grupy Z301 na semestr zimowy 2026/2027 i aktualne komunikaty WWSI."
+    />
+    <meta name="theme-color" content="#f5f6fa" />
+    <title>Plan zajęć — semestr zimowy</title>
+    <link rel="stylesheet" href="./styles.css" />
+    <script src="./app.js" defer></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="Plan zajęć — strona główna">
+        <span class="brand-mark" aria-hidden="true">P</span>
+        <span class="brand-copy">
+          <strong>Plan zajęć</strong>
+          <span>WWSI · semestr zimowy</span>
+        </span>
+      </a>
+      <span class="source-badge"><span></span> Twój plan, zawsze pod ręką</span>
+    </header>
+
+    <main>
+      <section class="hero" aria-labelledby="page-title">
+        <div class="hero-copy">
+          <p class="eyebrow"><span class="eyebrow-line"></span> ROK AKADEMICKI 2026 / 2027</p>
+          <h1 id="page-title">Dobry plan.<br /><span>Spokojny semestr.</span></h1>
+          <p class="hero-description">
+            Wszystkie zajęcia w jednym miejscu. Wybierz zjazd i sprawdź, z kim spotykasz się na sali.
+          </p>
+        </div>
+        <div class="hero-side" aria-live="polite">
+          <div class="hero-date-icon" aria-hidden="true">
+            <span></span><span></span><span></span><span></span>
+          </div>
+          <p class="hero-side-label">WYBRANY TERMIN</p>
+          <p class="hero-next-date" id="next-session-date">—</p>
+          <p class="hero-next-name" id="next-session-name">—</p>
+          <a class="hero-link" href="#schedule">Zobacz plan <span aria-hidden="true">↓</span></a>
+        </div>
+        <div class="hero-decoration hero-decoration-one" aria-hidden="true"></div>
+        <div class="hero-decoration hero-decoration-two" aria-hidden="true"></div>
+      </section>
+
+      <section class="session-section" aria-labelledby="session-heading">
+        <div class="section-heading">
+          <div>
+            <p class="section-kicker">KALENDARZ</p>
+            <h2 id="session-heading">Wybierz zjazd</h2>
+          </div>
+          <span class="section-hint">Semestr I · 8 weekendów</span>
+        </div>
+        <div class="session-list" id="session-list" role="group" aria-label="Terminy zjazdów"></div>
+      </section>
+
+      <section class="overview" aria-label="Podsumowanie wybranego planu">
+        <article class="overview-card overview-primary">
+          <span class="overview-icon icon-blue" aria-hidden="true">↗</span>
+          <div>
+            <p class="overview-label">WYBRANY ZJAZD</p>
+            <p class="overview-value" id="overview-session">—</p>
+          </div>
+        </article>
+        <article class="overview-card">
+          <span class="overview-icon icon-green" aria-hidden="true">◷</span>
+          <div>
+            <p class="overview-label">ZAJĘCIA W PLANIE</p>
+            <p class="overview-value"><span id="class-count">0</span><span class="overview-unit">bloków</span></p>
+          </div>
+        </article>
+        <article class="overview-card">
+          <span class="overview-icon icon-violet" aria-hidden="true">◎</span>
+          <div>
+            <p class="overview-label">TWOJA GRUPA</p>
+            <p class="overview-value" id="primary-group">Z301</p>
+          </div>
+        </article>
+      </section>
+
+      <section class="schedule-section" id="schedule" aria-labelledby="schedule-heading">
+        <div class="schedule-heading">
+          <div>
+            <p class="section-kicker">GRUPA Z301</p>
+            <h2 id="schedule-heading">Plan zjazdu</h2>
+          </div>
+          <label class="search-box">
+            <span class="search-icon" aria-hidden="true">⌕</span>
+            <span class="visually-hidden">Szukaj przedmiotu lub prowadzącego</span>
+            <input id="search-input" type="search" placeholder="Szukaj zajęć…" autocomplete="off" />
+            <kbd>/</kbd>
+          </label>
+        </div>
+
+        <div class="schedule-summary">
+          <p id="schedule-date-range">—</p>
+          <span class="legend">Pod zajęciami znajdziesz informację o grupie</span>
+        </div>
+        <div class="day-grid" id="day-grid" aria-live="polite"></div>
+        <p class="source-note">
+          Plan opracowany na podstawie dostarczonego arkusza. Godziny, sale i opisy pochodzą z pliku źródłowego.
+          Zawsze sprawdź komunikaty uczelni w razie zmian.
+        </p>
+      </section>
+
+      <section class="announcements-section" id="announcements" aria-labelledby="announcements-heading">
+        <div class="announcements-heading">
+          <div>
+            <p class="section-kicker">NA BIEŻĄCO</p>
+            <h2 id="announcements-heading">Komunikaty uczelni</h2>
+          </div>
+          <button class="refresh-button" id="refresh-announcements" type="button">
+            <span aria-hidden="true">↻</span> Odśwież
+          </button>
+        </div>
+        <div class="announcements-meta">
+          <p id="announcements-status" role="status">Wczytywanie komunikatów…</p>
+          <a href="https://student.wwsi.edu.pl/feed/" target="_blank" rel="noopener noreferrer">
+            Otwórz kanał RSS <span aria-hidden="true">↗</span>
+          </a>
+        </div>
+        <div class="announcement-list" id="announcement-list" aria-live="polite"></div>
+        <p class="announcements-source">
+          Aktualności pochodzą z kanału RSS Panelu Studenta. <a href="https://student.wwsi.edu.pl/komunikaty/" target="_blank" rel="noopener noreferrer">Strona komunikatów uczelni</a> może wymagać zalogowania.
+        </p>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <span>Plan semestru zimowego 2026/2027</span>
+      <a href="#page-title">Do góry ↑</a>
+    </footer>
+    <div class="error-banner" id="error-banner" role="alert" hidden>
+      Nie udało się wczytać danych planu. Odśwież stronę lub sprawdź, czy plik data/schedule.json jest dostępny.
+    </div>
+  </body>
+</html>
