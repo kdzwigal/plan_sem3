@@ -5,6 +5,7 @@
   "description": "Plan zajęć Z301 i komunikaty WWSI",
   "scripts": {
     "build": "node build.js",
+    "start": "node server.js",
     "test": "node --test"
   },
   "engines": {

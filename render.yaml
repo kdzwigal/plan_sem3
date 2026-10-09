@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: plan-zajec-z301
-    runtime: static
+    name: plan-zajec-z301-live
+    runtime: node
     buildCommand: npm install && npm run build
-    staticPublishPath: ./dist
+    startCommand: npm start

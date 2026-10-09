@@ -5,6 +5,7 @@ const os = require('node:os');
 const path = require('node:path');
 const { FEED_URL, fetchAnnouncements, parseRss, referencedGroups } = require('../announcements');
 const { buildStaticSite } = require('../build');
+const { createServer } = require('../server');
 
 const feed = `<?xml version="1.0"?>
 <rss version="2.0"><channel>
@@ -76,65 +77,101 @@ async function withTempDirectory(callback) {
   }
 }
 
-test('builds a static publish directory with an RSS snapshot and only public files', async () => {
+test('builds static assets and includes a validated RSS fallback without fetching the network', async () => {
   await withTempDirectory(async (outputDirectory) => {
-    const fetchedAt = '2026-10-09T10:57:55.000Z';
-    await buildStaticSite({
-      outputDirectory,
-      loadAnnouncements: async () => ({ items: parseRss(feed), fetchedAt }),
-    });
-    const announcements = JSON.parse(
-      await fs.readFile(path.join(outputDirectory, 'data', 'announcements.json'), 'utf8'),
-    );
-    assert.equal(announcements.fetchedAt, fetchedAt);
-    assert.equal(announcements.items.length, 2);
+    await buildStaticSite({ outputDirectory });
     assert.equal(
       await fs.readFile(path.join(outputDirectory, 'data', 'schedule.json'), 'utf8'),
       await fs.readFile(path.join(__dirname, '..', 'data', 'schedule.json'), 'utf8'),
     );
-    assert.match(await fs.readFile(path.join(outputDirectory, 'app.js'), 'utf8'), /data\/announcements\.json/);
+    assert.match(await fs.readFile(path.join(outputDirectory, 'app.js'), 'utf8'), /\/api\/announcements/);
     assert.deepEqual((await fs.readdir(outputDirectory)).sort(), ['app.js', 'data', 'index.html', 'styles.css']);
+    assert.deepEqual(
+      (await fs.readdir(path.join(outputDirectory, 'data'))).sort(),
+      ['announcements.json', 'schedule.json'],
+    );
   });
 });
 
-test('uses the validated saved snapshot if the upstream RSS fetch fails', async () => {
+test('fetches fresh RSS on each announcements request and disables response caching', async () => {
   await withTempDirectory(async (outputDirectory) => {
-    const cacheFile = path.join(outputDirectory, 'announcements-cache.json');
-    const snapshot = {
-      items: parseRss(feed),
-      fetchedAt: '2026-10-09T10:57:55.000Z',
-    };
-    await fs.writeFile(cacheFile, JSON.stringify(snapshot));
-    await buildStaticSite({
-      outputDirectory: path.join(outputDirectory, 'dist'),
-      cacheFile,
-      loadAnnouncements: async () => {
-        throw new Error('UNABLE_TO_VERIFY_LEAF_SIGNATURE');
+    await buildStaticSite({ outputDirectory });
+    let fetchCount = 0;
+    const server = createServer({
+      publishDirectory: outputDirectory,
+      fetchLiveAnnouncements: async () => {
+        fetchCount += 1;
+        return {
+          items: parseRss(feed),
+          fetchedAt: `2026-10-09T10:57:${String(fetchCount).padStart(2, '0')}.000Z`,
+        };
       },
     });
 
-    const publishedSnapshot = JSON.parse(
-      await fs.readFile(path.join(outputDirectory, 'dist', 'data', 'announcements.json'), 'utf8'),
-    );
-    assert.deepEqual(publishedSnapshot, snapshot);
+    await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
+    try {
+      const baseUrl = `http://127.0.0.1:${server.address().port}`;
+      for (let request = 1; request <= 2; request += 1) {
+        const response = await fetch(`${baseUrl}/api/announcements`);
+        const result = await response.json();
+        assert.equal(response.status, 200);
+        assert.equal(response.headers.get('cache-control'), 'no-store');
+        assert.equal(result.fetchedAt, `2026-10-09T10:57:${String(request).padStart(2, '0')}.000Z`);
+      }
+      assert.equal(fetchCount, 2);
+    } finally {
+      await new Promise((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
+    }
   });
 });
 
-test('fails the static build if neither RSS nor a valid saved snapshot is available', async () => {
+test('serves a validated stale RSS snapshot when the source is temporarily unavailable', async () => {
   await withTempDirectory(async (outputDirectory) => {
-    const cacheFile = path.join(outputDirectory, 'missing-snapshot.json');
-    const publishDirectory = path.join(outputDirectory, 'dist');
-    await assert.rejects(
-      buildStaticSite({
-        outputDirectory: publishDirectory,
-        cacheFile,
-        loadAnnouncements: async () => {
-          throw new Error('Kanał RSS jest niedostępny.');
-        },
-      }),
-      /RSS ani wczytać prawidłowej migawki/,
-    );
-    assert.deepEqual(await fs.readdir(outputDirectory), []);
-    await assert.rejects(fs.access(publishDirectory), { code: 'ENOENT' });
+    await buildStaticSite({ outputDirectory });
+    const warnings = [];
+    const server = createServer({
+      publishDirectory: outputDirectory,
+      fetchLiveAnnouncements: async () => {
+        throw new Error('Kanał RSS niedostępny.');
+      },
+      logger: { error() {}, warn(message) { warnings.push(message); } },
+    });
+
+    await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
+    try {
+      const response = await fetch(`http://127.0.0.1:${server.address().port}/api/announcements`);
+      const result = await response.json();
+      assert.equal(response.status, 200);
+      assert.equal(response.headers.get('cache-control'), 'no-store');
+      assert.equal(result.isStale, true);
+      assert.equal(result.items.length, 17);
+      assert.equal(warnings.length, 1);
+    } finally {
+      await new Promise((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
+    }
+  });
+});
+
+test('reports an RSS failure if neither live data nor a valid fallback is available', async () => {
+  await withTempDirectory(async (outputDirectory) => {
+    await buildStaticSite({ outputDirectory });
+    const server = createServer({
+      publishDirectory: outputDirectory,
+      cacheFile: path.join(outputDirectory, 'missing-announcements.json'),
+      fetchLiveAnnouncements: async () => {
+        throw new Error('Kanał RSS niedostępny.');
+      },
+      logger: { error() {}, warn() {} },
+    });
+
+    await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
+    try {
+      const response = await fetch(`http://127.0.0.1:${server.address().port}/api/announcements`);
+      assert.equal(response.status, 502);
+      assert.equal(response.headers.get('cache-control'), 'no-store');
+      assert.deepEqual(await response.json(), { error: 'Nie udało się pobrać komunikatów z kanału RSS.' });
+    } finally {
+      await new Promise((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
+    }
   });
 });

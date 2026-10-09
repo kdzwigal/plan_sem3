@@ -110,6 +110,39 @@ function parseRss(xml) {
   return items.sort((left, right) => Date.parse(right.publishedAt) - Date.parse(left.publishedAt));
 }
 
+function isAnnouncementsSnapshot(value) {
+  if (
+    !value
+    || !Array.isArray(value.items)
+    || value.items.length === 0
+    || typeof value.fetchedAt !== 'string'
+    || !Number.isFinite(Date.parse(value.fetchedAt))
+  ) {
+    return false;
+  }
+
+  return value.items.every((item) => {
+    if (
+      !item
+      || typeof item.title !== 'string'
+      || typeof item.description !== 'string'
+      || typeof item.scope !== 'string'
+      || !Array.isArray(item.groups)
+      || !item.groups.every((group) => typeof group === 'string')
+      || typeof item.publishedAt !== 'string'
+      || !Number.isFinite(Date.parse(item.publishedAt))
+      || typeof item.url !== 'string'
+    ) {
+      return false;
+    }
+    try {
+      return new URL(item.url).origin === 'https://student.wwsi.edu.pl';
+    } catch {
+      return false;
+    }
+  });
+}
+
 async function readFeedBody(response) {
   if (!response.body) throw new Error('Kanał RSS zwrócił pustą odpowiedź.');
 
@@ -150,6 +183,7 @@ async function fetchAnnouncements({ fetchImpl = fetch, now = Date.now } = {}) {
 module.exports = {
   FEED_URL,
   fetchAnnouncements,
+  isAnnouncementsSnapshot,
   parseRss,
   referencedGroups,
 };

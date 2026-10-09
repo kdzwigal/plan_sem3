@@ -160,9 +160,9 @@ function announcementCount(count) {
 
 async function loadAnnouncements() {
   try {
-    const response = await fetch('./data/announcements.json');
+    const response = await fetch('/api/announcements', { cache: 'no-store' });
     if (!response.ok) {
-      throw new Error(`Nie udało się wczytać komunikatów z wdrożenia (${response.status}).`);
+      throw new Error(`Nie udało się pobrać aktualnych komunikatów (${response.status}).`);
     }
     const result = await response.json();
     if (!Array.isArray(result.items) || !result.fetchedAt) {
@@ -179,17 +179,18 @@ async function loadAnnouncements() {
       hour: '2-digit',
       minute: '2-digit',
     }).format(new Date(result.fetchedAt));
+    const freshness = result.isStale ? 'RSS niedostępny · ostatnie dane' : 'Aktualizacja';
     elements.announcementStatus.textContent =
-      `Dane z builda: ${updateTime} · ${announcementCount(result.items.length)}`;
+      `${freshness}: ${updateTime} · ${announcementCount(result.items.length)}`;
   } catch (error) {
     console.error('Błąd wczytywania komunikatów:', error);
-    elements.announcementStatus.textContent = 'Nie udało się wczytać komunikatów z wdrożenia.';
+    elements.announcementStatus.textContent = 'Nie udało się pobrać aktualnych komunikatów.';
     renderAnnouncementMessage(
       error instanceof TypeError
-        ? 'Nie można połączyć się z plikiem komunikatów. Sprawdź adres wdrożenia.'
+        ? 'Nie można połączyć się z serwerem komunikatów. Sprawdź połączenie z internetem.'
         : error instanceof Error
           ? error.message
-          : 'Sprawdź wdrożenie witryny statycznej.',
+          : 'Spróbuj ponownie później.',
       true,
     );
   }
