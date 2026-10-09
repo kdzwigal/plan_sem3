@@ -30,7 +30,6 @@ const state = {
   schedule: null,
   selectedSession: 1,
   search: '',
-  announcementPromise: null,
 };
 
 const elements = {
@@ -39,7 +38,6 @@ const elements = {
   searchInput: document.querySelector('#search-input'),
   announcementList: document.querySelector('#announcement-list'),
   announcementStatus: document.querySelector('#announcements-status'),
-  refreshAnnouncements: document.querySelector('#refresh-announcements'),
   errorBanner: document.querySelector('#error-banner'),
 };
 
@@ -115,49 +113,50 @@ function renderAnnouncementMessage(message, isError = false) {
   elements.announcementList.replaceChildren(empty);
 }
 
-async function loadAnnouncements(force = false) {
-  if (state.announcementPromise) return state.announcementPromise;
+function announcementCount(count) {
+  if (count === 1) return '1 komunikat';
+  const lastTwo = count % 100;
+  const lastDigit = count % 10;
+  const noun = lastDigit >= 2 && lastDigit <= 4 && (lastTwo < 12 || lastTwo > 14)
+    ? 'komunikaty'
+    : 'komunikatów';
+  return `${count} ${noun}`;
+}
 
-  elements.refreshAnnouncements.disabled = true;
-  elements.announcementStatus.textContent = force
-    ? 'Odświeżanie komunikatów…'
-    : 'Wczytywanie komunikatów…';
-
-  state.announcementPromise = (async () => {
-    try {
-      const response = await fetch(`/api/announcements${force ? '?refresh=1' : ''}`);
-      const result = await response.json();
-      if (!response.ok) {
-        throw new Error(result.error || `Nie udało się pobrać komunikatów (${response.status}).`);
-      }
-      if (!Array.isArray(result.items)) throw new Error('Otrzymano nieprawidłowe dane komunikatów.');
-
-      const cards = result.items.map(renderAnnouncement);
-      elements.announcementList.replaceChildren(...cards);
-      const updateTime = new Intl.DateTimeFormat('pl-PL', {
-        day: 'numeric',
-        month: 'long',
-        hour: '2-digit',
-        minute: '2-digit',
-      }).format(new Date(result.fetchedAt));
-      elements.announcementStatus.textContent = `Zaktualizowano ${updateTime} · ${result.items.length} komunikatów`;
-    } catch (error) {
-      console.error('Błąd wczytywania komunikatów:', error);
-      elements.announcementStatus.textContent = 'Nie udało się pobrać aktualnych komunikatów.';
-      renderAnnouncementMessage(
-        error instanceof TypeError
-          ? 'Nie udało się połączyć z kanałem RSS. Spróbuj ponownie za chwilę.'
-          : error instanceof Error
-            ? error.message
-            : 'Sprawdź połączenie i spróbuj ponownie.',
-        true,
-      );
-    } finally {
-      elements.refreshAnnouncements.disabled = false;
-      state.announcementPromise = null;
+async function loadAnnouncements() {
+  try {
+    const response = await fetch('./data/announcements.json');
+    if (!response.ok) {
+      throw new Error(`Nie udało się wczytać komunikatów z wdrożenia (${response.status}).`);
     }
-  })();
-  return state.announcementPromise;
+    const result = await response.json();
+    if (!Array.isArray(result.items) || !result.fetchedAt) {
+      throw new Error('Otrzymano nieprawidłowe dane komunikatów.');
+    }
+
+    const cards = result.items.map(renderAnnouncement);
+    elements.announcementList.replaceChildren(...cards);
+    const updateTime = new Intl.DateTimeFormat('pl-PL', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    }).format(new Date(result.fetchedAt));
+    elements.announcementStatus.textContent =
+      `Dane z builda: ${updateTime} · ${announcementCount(result.items.length)}`;
+  } catch (error) {
+    console.error('Błąd wczytywania komunikatów:', error);
+    elements.announcementStatus.textContent = 'Nie udało się wczytać komunikatów z wdrożenia.';
+    renderAnnouncementMessage(
+      error instanceof TypeError
+        ? 'Nie można połączyć się z plikiem komunikatów. Sprawdź adres wdrożenia.'
+        : error instanceof Error
+          ? error.message
+          : 'Sprawdź wdrożenie witryny statycznej.',
+      true,
+    );
+  }
 }
 
 function splitCourses(description) {
@@ -416,7 +415,6 @@ async function start() {
         elements.searchInput.focus();
       }
     });
-    elements.refreshAnnouncements.addEventListener('click', () => loadAnnouncements(true));
     render();
     void loadAnnouncements();
   } catch (error) {

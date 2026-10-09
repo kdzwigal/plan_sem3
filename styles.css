@@ -723,35 +723,6 @@ p {
   letter-spacing: -.65px;
 }
 
-.refresh-button {
-  display: inline-flex;
-  min-height: 36px;
-  align-items: center;
-  gap: 7px;
-  padding: 0 12px;
-  border: 1px solid #e5e7ef;
-  border-radius: 9px;
-  background: var(--paper);
-  color: #606984;
-  cursor: pointer;
-  font-size: 10px;
-  font-weight: 700;
-}
-
-.refresh-button:hover:not(:disabled) {
-  border-color: #c9cff8;
-  color: var(--blue);
-}
-
-.refresh-button:disabled {
-  cursor: wait;
-  opacity: .65;
-}
-
-.refresh-button span {
-  font-size: 15px;
-}
-
 .announcements-meta {
   margin: 10px 1px 13px;
 }

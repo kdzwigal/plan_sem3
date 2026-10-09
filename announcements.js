@@ -129,50 +129,27 @@ async function readFeedBody(response) {
   return Buffer.concat(chunks).toString('utf8');
 }
 
-function createAnnouncementLoader({
-  fetchImpl = fetch,
-  cacheTtlMs = 5 * 60 * 1000,
-  now = Date.now,
-} = {}) {
-  let cached = null;
-  let inFlight = null;
-
-  return async function loadAnnouncements({ force = false } = {}) {
-    if (!force && cached && now() - cached.fetchedAtMs < cacheTtlMs) return cached;
-    if (inFlight) return inFlight;
-
-    inFlight = (async () => {
-      const response = await fetchImpl(FEED_URL, {
-        headers: { Accept: 'application/rss+xml, application/xml;q=0.9, text/xml;q=0.8' },
-        redirect: 'error',
-        signal: AbortSignal.timeout(10_000),
-      });
-      if (!response.ok) {
-        throw new Error(`Kanał RSS odpowiedział kodem HTTP ${response.status}.`);
-      }
-      const contentLength = Number(response.headers.get('content-length'));
-      if (contentLength > MAX_FEED_BYTES) throw new Error('Kanał RSS przekracza dozwolony rozmiar.');
-      const xml = await readFeedBody(response);
-      const result = {
-        items: parseRss(xml),
-        fetchedAt: new Date(now()).toISOString(),
-        fetchedAtMs: now(),
-      };
-      cached = result;
-      return result;
-    })();
-
-    try {
-      return await inFlight;
-    } finally {
-      inFlight = null;
-    }
+async function fetchAnnouncements({ fetchImpl = fetch, now = Date.now } = {}) {
+  const response = await fetchImpl(FEED_URL, {
+    headers: { Accept: 'application/rss+xml, application/xml;q=0.9, text/xml;q=0.8' },
+    redirect: 'error',
+    signal: AbortSignal.timeout(10_000),
+  });
+  if (!response.ok) {
+    throw new Error(`Kanał RSS odpowiedział kodem HTTP ${response.status}.`);
+  }
+  const contentLength = Number(response.headers.get('content-length'));
+  if (contentLength > MAX_FEED_BYTES) throw new Error('Kanał RSS przekracza dozwolony rozmiar.');
+  const xml = await readFeedBody(response);
+  return {
+    items: parseRss(xml),
+    fetchedAt: new Date(now()).toISOString(),
   };
 }
 
 module.exports = {
   FEED_URL,
-  createAnnouncementLoader,
+  fetchAnnouncements,
   parseRss,
   referencedGroups,
 };

@@ -1,7 +1,10 @@
 const assert = require('node:assert/strict');
 const test = require('node:test');
-const { createAnnouncementLoader, parseRss, referencedGroups } = require('../announcements');
-const { createServer } = require('../server');
+const fs = require('node:fs/promises');
+const os = require('node:os');
+const path = require('node:path');
+const { FEED_URL, fetchAnnouncements, parseRss, referencedGroups } = require('../announcements');
+const { buildStaticSite } = require('../build');
 
 const feed = `<?xml version="1.0"?>
 <rss version="2.0"><channel>
@@ -48,76 +51,63 @@ test('rejects malformed RSS documents and invalid announcement dates', () => {
   );
 });
 
-test('caches successful feed responses and refreshes when requested', async () => {
-  let calls = 0;
-  let time = 1_000;
-  const load = createAnnouncementLoader({
-    fetchImpl: async () => {
-      calls += 1;
+test('fetches the RSS feed with a verified, bounded request', async () => {
+  let request;
+  const result = await fetchAnnouncements({
+    fetchImpl: async (...args) => {
+      request = args;
       return new Response(feed, { status: 200 });
     },
-    cacheTtlMs: 300_000,
-    now: () => time,
+    now: () => Date.parse('2026-10-09T10:57:55.000Z'),
   });
-
-  const first = await load();
-  time += 1_000;
-  const cached = await load();
-  assert.equal(calls, 1);
-  assert.equal(cached.fetchedAt, first.fetchedAt);
-
-  await load({ force: true });
-  assert.equal(calls, 2);
+  assert.equal(request[0], FEED_URL);
+  assert.equal(request[1].redirect, 'error');
+  assert.equal(request[1].headers.Accept.includes('application/rss+xml'), true);
+  assert.equal(result.items.length, 2);
+  assert.equal(result.fetchedAt, '2026-10-09T10:57:55.000Z');
 });
 
-async function withServer(loadAnnouncements, callback) {
-  const server = createServer({ loadAnnouncements });
-  await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
-  const address = server.address();
+async function withTempDirectory(callback) {
+  const directory = await fs.mkdtemp(path.join(os.tmpdir(), 'plan-zajec-build-'));
   try {
-    await callback(`http://127.0.0.1:${address.port}`);
+    await callback(directory);
   } finally {
-    await new Promise((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
+    await fs.rm(directory, { recursive: true, force: true });
   }
 }
 
-test('serves announcements, rejects writes, and never serves unlisted files', async () => {
-  const result = {
-    items: parseRss(feed),
-    fetchedAt: '2026-10-09T10:57:55.000Z',
-  };
-  await withServer(async () => result, async (origin) => {
-    const response = await fetch(`${origin}/api/announcements`);
-    assert.equal(response.status, 200);
-    assert.deepEqual(await response.json(), result);
-
-    const writeResponse = await fetch(`${origin}/api/announcements`, { method: 'POST' });
-    assert.equal(writeResponse.status, 405);
-    assert.equal(writeResponse.headers.get('allow'), 'GET');
-
-    const privateFile = await fetch(`${origin}/plan_sem3.xls`);
-    assert.equal(privateFile.status, 404);
+test('builds a static publish directory with an RSS snapshot and only public files', async () => {
+  await withTempDirectory(async (outputDirectory) => {
+    const fetchedAt = '2026-10-09T10:57:55.000Z';
+    await buildStaticSite({
+      outputDirectory,
+      loadAnnouncements: async () => ({ items: parseRss(feed), fetchedAt }),
+    });
+    const announcements = JSON.parse(
+      await fs.readFile(path.join(outputDirectory, 'data', 'announcements.json'), 'utf8'),
+    );
+    assert.equal(announcements.fetchedAt, fetchedAt);
+    assert.equal(announcements.items.length, 2);
+    assert.equal(
+      await fs.readFile(path.join(outputDirectory, 'data', 'schedule.json'), 'utf8'),
+      await fs.readFile(path.join(__dirname, '..', 'data', 'schedule.json'), 'utf8'),
+    );
+    assert.match(await fs.readFile(path.join(outputDirectory, 'app.js'), 'utf8'), /data\/announcements\.json/);
+    assert.deepEqual((await fs.readdir(outputDirectory)).sort(), ['app.js', 'data', 'index.html', 'styles.css']);
   });
 });
 
-test('passes an explicit refresh request through to the RSS cache', async () => {
-  const refreshRequests = [];
-  await withServer(async ({ force }) => {
-    refreshRequests.push(force);
-    return { items: parseRss(feed), fetchedAt: '2026-10-09T10:57:55.000Z' };
-  }, async (origin) => {
-    await fetch(`${origin}/api/announcements`);
-    await fetch(`${origin}/api/announcements?refresh=1`);
-  });
-  assert.deepEqual(refreshRequests, [false, true]);
-});
-
-test('returns an explicit API error when the upstream feed is unavailable', async () => {
-  await withServer(async () => {
-    throw new Error('Kanał RSS odpowiedział kodem HTTP 503.');
-  }, async (origin) => {
-    const response = await fetch(`${origin}/api/announcements`);
-    assert.equal(response.status, 502);
-    assert.deepEqual(await response.json(), { error: 'Kanał RSS odpowiedział kodem HTTP 503.' });
+test('fails the static build if the RSS feed cannot be loaded', async () => {
+  await withTempDirectory(async (outputDirectory) => {
+    await assert.rejects(
+      buildStaticSite({
+        outputDirectory,
+        loadAnnouncements: async () => {
+          throw new Error('Kanał RSS jest niedostępny.');
+        },
+      }),
+      /Kanał RSS jest niedostępny/,
+    );
+    assert.deepEqual(await fs.readdir(outputDirectory), []);
   });
 });
